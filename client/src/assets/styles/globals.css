@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+a {
+  text-decoration: none;
+  color: inherit;
+}
+li {
+  list-style: none;
+  color: inherit;
+}
+.anticon svg {
+  vertical-align: unset;
+}
+.ant-ribbon-text {
+  overflow: hidden;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+}
+
+.max-w-container {
+  max-width: 1134px;
+}
+
+/**
+The CSS for news content
+*/
+
+.content-post p,
+.content-post ul,
+.content-post ol,
+.content-post blockquote,
+.content-post figure,
+.content-post table {
+  line-height: 2rem;
+  margin: 0 0 1.5em;
+}
+
+.content-post ul {
+  display: block;
+  list-style-type: disc;
+  margin-block-start: 1em;
+  margin-block-end: 1em;
+  margin-inline-start: 0px;
+  margin-inline-end: 0px;
+  padding-inline-start: 40px;
+}
+
+.content-post ul ul {
+  list-style-type: circle;
+  margin-block-start: 0px;
+  margin-block-end: 0px;
+}
+
+.content-post li {
+  display: list-item;
+  text-align: -webkit-match-parent;
+}
+
+.content-post ::marker {
+  unicode-bidi: isolate;
+  font-variant-numeric: tabular-nums;
+  text-transform: none;
+  text-indent: 0px !important;
+  text-align: start !important;
+  text-align-last: start !important;
+}
