@@ -1,0 +1,252 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fieldReference"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum shipping_status {
+  CONFIRMING
+  PREPAIRING
+  SHIPPING
+  DELIVERED
+  COMPLETED
+  REJECTED
+}
+
+enum source_news {
+  ADMIN_POST
+  CRAWL
+}
+
+enum product_status {
+  READY
+  RUN_OUT
+  SUSPENSE
+}
+
+enum payment_type {
+  LIVE
+  BANKING
+}
+
+model User {
+  id            BigInt       @id @default(autoincrement())
+  email         String       @unique
+  password      String
+  full_name     String
+  number_phone  String       @unique
+  birthday      DateTime
+  business_type BigInt
+  city_id       BigInt
+  address       String
+  business_name String
+  user_referer  String?
+  created_at    DateTime     @default(now())
+  updated_at    DateTime     @updatedAt
+  city          City         @relation(fields: [city_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  businessType  BusinessType @relation(fields: [business_type], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  cart          Cart[]
+  order         Order[]
+  bill          Bill[]
+
+  @@unique([number_phone, password])
+}
+
+model City {
+  id         BigInt   @id @default(autoincrement())
+  name       String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  user       User[]
+}
+
+model Category {
+  id         BigInt    @id @default(autoincrement())
+  name       String
+  slug       String    @unique
+  is_active  Boolean   @default(true)
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  product    Product[]
+}
+
+model Ingredient {
+  id         BigInt    @id @default(autoincrement())
+  name       String
+  slug       String    @unique
+  is_active  Boolean   @default(true)
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  product    Product[]
+}
+
+model Manufacturer {
+  id         BigInt    @id @default(autoincrement())
+  name       String
+  slug       String    @unique
+  is_active  Boolean   @default(true)
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  product    Product[]
+}
+
+model Cart {
+  id         BigInt   @id @default(autoincrement())
+  product_id BigInt
+  user_id    BigInt
+  quantity   Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  product    Product  @relation(fields: [product_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model Coupon {
+  id             BigInt   @id @default(autoincrement())
+  coupon_code    String   @unique
+  coupon_name    String
+  is_active      Boolean  @default(true)
+  discount_price BigInt
+  quantity       Int
+  used           Int      @default(0)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+}
+
+model Bill {
+  id              BigInt          @id @default(autoincrement())
+  relation_id     String          @unique
+  total_price     BigInt
+  final_price     BigInt
+  user_id         BigInt
+  discount_price  BigInt?
+  coupon_code     String?
+  shipping_status shipping_status @default(PREPAIRING)
+  payment_type    payment_type    @default(LIVE)
+  note            String?         @db.Text
+  created_at      DateTime        @default(now())
+  updated_at      DateTime        @updatedAt
+  user            User            @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  order           Order[]
+}
+
+model Order {
+  id          BigInt   @id @default(autoincrement())
+  product_id  BigInt
+  user_id     BigInt
+  bill_id     String
+  quantity    Int
+  unit_price  BigInt
+  total_price BigInt
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  product     Product  @relation(fields: [product_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  bill        Bill     @relation(fields: [bill_id], references: [relation_id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model Product {
+  id               BigInt           @id @default(autoincrement())
+  name             String
+  slug             String
+  unit_price       BigInt
+  category_id      BigInt?
+  description      String?          @db.Text
+  full_description String?          @db.Text
+  ingredient_id    BigInt?
+  manufacturer_id  BigInt?
+  image_url        String
+  is_hot           Boolean          @default(false)
+  is_outstanding   Boolean          @default(false)
+  note             String           @default("")
+  expiry           DateTime?
+  import_prices    BigInt?
+  promotion_price  BigInt?
+  status           product_status   @default(READY)
+  sold             Int              @default(0)
+  created_at       DateTime         @default(now())
+  updated_at       DateTime         @updatedAt
+  category         Category?        @relation(fields: [category_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  ingredient       Ingredient?      @relation(fields: [ingredient_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  manufacturer     Manufacturer?    @relation(fields: [manufacturer_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  cart             Cart[]
+  order            Order[]
+  tags             TagsOnProducts[]
+}
+
+model NewType {
+  id         BigInt   @id @default(autoincrement())
+  name       String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  new        New[]
+}
+
+model New {
+  id           BigInt      @id @default(autoincrement())
+  slug         String      @unique
+  title        String      @db.Text
+  content_post String      @db.Text
+  image_url    String
+  source       source_news @default(ADMIN_POST)
+  new_type_id  BigInt
+  created_at   DateTime    @default(now())
+  updated_at   DateTime    @updatedAt
+  newType      NewType     @relation(fields: [new_type_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  banner       Banner[]
+}
+
+model Banner {
+  id         BigInt   @id @default(autoincrement())
+  image_url  String
+  new_id     BigInt
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  news       New      @relation(fields: [new_id], references: [id])
+}
+
+model Admin {
+  id         BigInt   @id @default(autoincrement())
+  email      String   @unique
+  password   String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([email, password])
+}
+
+model BusinessType {
+  id         BigInt   @id @default(autoincrement())
+  name       String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  user       User[]
+}
+
+model Tag {
+  id         BigInt           @id @default(autoincrement())
+  name       String
+  slug       String           @unique
+  is_active  Boolean          @default(true)
+  created_at DateTime         @default(now())
+  updated_at DateTime         @updatedAt
+  product    TagsOnProducts[]
+}
+
+model TagsOnProducts {
+  product_id  BigInt
+  product     Product  @relation(fields: [product_id], references: [id])
+  tag_id      BigInt
+  tag         Tag      @relation(fields: [tag_id], references: [id])
+  assigned_at DateTime @default(now())
+
+  @@id([product_id, tag_id])
+}

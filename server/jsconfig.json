@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "esnext",
+    "baseUrl": "./",
+    "moduleResolution": "node",
+    "paths": {
+      "#src/*": [
+        "./src/*"
+      ],
+      "#root/*": [
+        "./*"
+      ]
+    },
+  }
+}

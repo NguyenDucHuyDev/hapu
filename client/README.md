@@ -20,3 +20,5 @@ Cài đặt dự án giá thuốc Hapu với npm
 Trong file .env thêm vào
 `VITE_MY_API_PATH = https://hapu.ily1606.dev/api`
 
+## Run
+`npm run dev`
